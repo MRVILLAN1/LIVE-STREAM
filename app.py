@@ -53,28 +53,17 @@ def start_stream():
         "ffmpeg",
         "-re",
         "-stream_loop", "-1",
-        "-fflags", "+genpts",
         "-f", "concat",
         "-safe", "0",
         "-i", str(PLAYLIST),
-        "-vf", "scale=640:360:force_original_aspect_ratio=decrease:force_divisible_by=2,pad=640:360:(ow-iw)/2:(oh-ih)/2,fps=24,setsar=1,format=yuv420p",
-        "-af", "aresample=44100:async=1",
-        "-c:v", "libx264",
-        "-preset", "ultrafast",
-        "-b:v", "900k",
-        "-maxrate", "900k",
-        "-bufsize", "1800k",
-        "-g", "48",
-        "-keyint_min", "48",
-        "-sc_threshold", "0",
-        "-c:a", "aac",
-        "-b:a", "128k",
+        "-c", "copy",
+        "-max_muxing_queue_size", "1024",
         "-f", "flv",
         f"rtmp://a.rtmp.youtube.com/live2/{STREAM_KEY}"
     ]
 
     while True:
-        print("LIVE VERSION: v4 (re-encode 640x360 ultrafast)", flush=True)
+        print("LIVE VERSION: v5 (copy stream, no encode)", flush=True)
         print("Starting YouTube LIVE...", flush=True)
 
         process = subprocess.Popen(
