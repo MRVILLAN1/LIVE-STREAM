@@ -16,12 +16,12 @@ STREAM_KEY = os.environ.get("YOUTUBE_STREAM_KEY")
 
 def start_stream():
     if not DRIVE_FOLDER_ID or not STREAM_KEY:
-        print("ERROR: Drive folder ID or Stream Key missing")
+        print("ERROR: Drive folder ID or Stream Key missing", flush=True)
         return
 
     VIDEO_DIR.mkdir(parents=True, exist_ok=True)
 
-    print("Downloading videos from Google Drive...")
+    print("Downloading videos from Google Drive...", flush=True)
 
     try:
         gdown.download_folder(
@@ -32,13 +32,13 @@ def start_stream():
             remaining_ok=True
         )
     except Exception as e:
-        print("Drive download error:", e)
+        print("Drive download error:", e, flush=True)
         return
 
     videos = sorted(VIDEO_DIR.rglob("*.mp4"))
 
     if not videos:
-        print("No MP4 videos found!")
+        print("No MP4 videos found!", flush=True)
         return
 
     with open(PLAYLIST, "w", encoding="utf-8") as f:
@@ -47,7 +47,7 @@ def start_stream():
             path = path.replace("\\", "\\\\").replace("'", "\\'")
             f.write(f"file '{path}'\n")
 
-    print(f"Found {len(videos)} videos")
+    print(f"Found {len(videos)} videos", flush=True)
 
     command = [
         "ffmpeg",
@@ -57,13 +57,13 @@ def start_stream():
         "-f", "concat",
         "-safe", "0",
         "-i", str(PLAYLIST),
-        "-vf", "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,fps=30,setsar=1,format=yuv420p",
+        "-vf", "scale=854:480:force_original_aspect_ratio=decrease:force_divisible_by=2,pad=854:480:(ow-iw)/2:(oh-ih)/2,fps=30,setsar=1,format=yuv420p",
         "-af", "aresample=44100:async=1",
         "-c:v", "libx264",
-        "-preset", "veryfast",
-        "-b:v", "2500k",
-        "-maxrate", "2500k",
-        "-bufsize", "5000k",
+        "-preset", "ultrafast",
+        "-b:v", "1500k",
+        "-maxrate", "1500k",
+        "-bufsize", "3000k",
         "-g", "60",
         "-keyint_min", "60",
         "-sc_threshold", "0",
@@ -73,10 +73,24 @@ def start_stream():
         f"rtmp://a.rtmp.youtube.com/live2/{STREAM_KEY}"
     ]
 
-    print("LIVE VERSION: v2 (re-encode 1280x720)")
-    print("Starting YouTube LIVE...")
+    while True:
+        print("LIVE VERSION: v3 (re-encode 854x480 ultrafast)", flush=True)
+        print("Starting YouTube LIVE...", flush=True)
 
-    subprocess.run(command)
+        process = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1
+        )
+
+        for line in process.stdout:
+            print(line.replace(STREAM_KEY, "***"), end="", flush=True)
+
+        process.wait()
+        print("ffmpeg stopped, restarting in 10 seconds...", flush=True)
+        time.sleep(10)
 
 @app.route("/")
 def home():
