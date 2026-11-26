@@ -57,15 +57,15 @@ def start_stream():
         "-f", "concat",
         "-safe", "0",
         "-i", str(PLAYLIST),
-        "-vf", "scale=854:480:force_original_aspect_ratio=decrease:force_divisible_by=2,pad=854:480:(ow-iw)/2:(oh-ih)/2,fps=30,setsar=1,format=yuv420p",
+        "-vf", "scale=640:360:force_original_aspect_ratio=decrease:force_divisible_by=2,pad=640:360:(ow-iw)/2:(oh-ih)/2,fps=24,setsar=1,format=yuv420p",
         "-af", "aresample=44100:async=1",
         "-c:v", "libx264",
         "-preset", "ultrafast",
-        "-b:v", "1500k",
-        "-maxrate", "1500k",
-        "-bufsize", "3000k",
-        "-g", "60",
-        "-keyint_min", "60",
+        "-b:v", "900k",
+        "-maxrate", "900k",
+        "-bufsize", "1800k",
+        "-g", "48",
+        "-keyint_min", "48",
         "-sc_threshold", "0",
         "-c:a", "aac",
         "-b:a", "128k",
@@ -74,7 +74,7 @@ def start_stream():
     ]
 
     while True:
-        print("LIVE VERSION: v3 (re-encode 854x480 ultrafast)", flush=True)
+        print("LIVE VERSION: v4 (re-encode 640x360 ultrafast)", flush=True)
         print("Starting YouTube LIVE...", flush=True)
 
         process = subprocess.Popen(
