@@ -1,4 +1,3 @@
-
 import os
 import time
 import threading
@@ -54,14 +53,27 @@ def start_stream():
         "ffmpeg",
         "-re",
         "-stream_loop", "-1",
+        "-fflags", "+genpts",
         "-f", "concat",
         "-safe", "0",
         "-i", str(PLAYLIST),
-        "-c", "copy",
+        "-vf", "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,fps=30,setsar=1,format=yuv420p",
+        "-af", "aresample=44100:async=1",
+        "-c:v", "libx264",
+        "-preset", "veryfast",
+        "-b:v", "2500k",
+        "-maxrate", "2500k",
+        "-bufsize", "5000k",
+        "-g", "60",
+        "-keyint_min", "60",
+        "-sc_threshold", "0",
+        "-c:a", "aac",
+        "-b:a", "128k",
         "-f", "flv",
         f"rtmp://a.rtmp.youtube.com/live2/{STREAM_KEY}"
     ]
 
+    print("LIVE VERSION: v2 (re-encode 1280x720)")
     print("Starting YouTube LIVE...")
 
     subprocess.run(command)
